@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TGCF Kawaii To-Do Creator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Quicksand', sans-serif;
+      background: linear-gradient(#fce4ec, #fff);
+      padding: 20px;
+      color: #555;
+    }
+    h1 {
+      font-family: 'Fredoka One', cursive;
+      color: #ff69b4;
+      text-align: center;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: #fff8fc;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(255, 105, 180, 0.2);
+    }
+    label {
+      font-weight: bold;
+    }
+    select, input, textarea, button {
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+      font-family: 'Quicksand', sans-serif;
+    }
+    .tasks {
+      margin-top: 10px;
+    }
+    .task-entry {
+      background: #fff0f5;
+      border-radius: 12px;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-left: 6px solid #ff69b4;
+    }
+    .preview {
+      margin-top: 20px;
+      padding: 20px;
+      border: 2px dashed #ffc0cb;
+      border-radius: 15px;
+      background-color: #fff0f5;
+    }
+    .preview h3 {
+      color: #ff69b4;
+    }
+    #pdf-content {
+      display: none;
+      padding: 20px;
+      font-size: 14px;
+      font-family: 'Quicksand', sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <h1>🌸 TGCF Kawaii To-Do Creator 🌸</h1>
+  <div class="container">
+    <label for="character">Choose a character theme:</label>
+    <select id="character">
+      <option value="xie">🥟 Xie Lian</option>
+      <option value="hua">🦋 Hua Cheng</option>
+      <option value="feng">🏹 Feng Xin</option>
+      <option value="mu">🔥 Mu Qing</option>
+      <option value="shi">🌬️ Shi Qingxuan</option>
+      <option value="he">🐟 He Xuan</option>
+      <option value="pei">💋 Pei Ming</option>
+      <option value="qi">👻 Qi Rong</option>
+      <option value="jun">🛡️ Jun Wu</option>
+    </select>
+
+    <label for="quote">Choose a TGCF quote:</label>
+    <select id="quote">
+      <option>"Body in abyss Heart in paradise."</option>
+      <option>"To me, the one basking in infinite glory is you..."</option>
+      <option>"I am forever your most devoted believer."</option>
+      <option>"To die in battle for you is my greatest honour."</option>
+      <option>"It hurts, It hurts, It hurts."</option>
+      <option>"There is no banquet in this world that doesn't come to an end."</option>
+      <option>"Gege"</option>
+    </select>
+
+    <div id="taskList" class="tasks"></div>
+
+    <button onclick="addTask()">➕ Add Task</button>
+    <button onclick="generatePreview()">✨ Preview</button>
+    <button onclick="downloadPDF()">📄 Download as PDF</button>
+
+    <div class="preview">
+      <div id="preview"></div>
+    </div>
+    <div id="pdf-content"></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script>
+    const themeColors = {
+      xie: '#fcd1d1',
+      hua: '#d9faff',
+      feng: '#ffe3e3',
+      mu: '#ffe6cc',
+      shi: '#e0f7fa',
+      he: '#d0f0fd',
+      pei: '#ffd6e0',
+      qi: '#e0e0ff',
+      jun: '#dce6f1'
+    };
+
+    function addTask() {
+      const taskList = document.getElementById('taskList');
+      const taskId = `task-${Date.now()}`;
+      const taskHTML = `
+        <div class="task-entry" id="${taskId}">
+          <label>Task:</label>
+          <input type="text" placeholder="E.g., Finish notes" class="task-title" />
+          <label>Notes:</label>
+          <textarea class="task-notes" placeholder="Extra info..."></textarea>
+          <label>Date:</label>
+          <input type="date" class="task-date" />
+        </div>
+      `;
+      taskList.insertAdjacentHTML('beforeend', taskHTML);
+    }
+
+    function generatePreview() {
+      const character = document.getElementById('character').value;
+      const quote = document.getElementById('quote').value;
+      const preview = document.getElementById('preview');
+      const pdfContent = document.getElementById('pdf-content');
+      const color = themeColors[character];
+      const characterLabel = document.getElementById('character').selectedOptions[0].text;
+      const tasks = document.querySelectorAll('.task-entry');
+
+      let contentHTML = `
+        <div style="background:${color}; padding: 20px; border-radius: 10px; font-family: 'Quicksand', sans-serif;">
+          <h3>${characterLabel}</h3>
+          <p><strong>💬 Quote:</strong> "${quote}"</p>
+          <ul style="list-style-type:none; padding-left:0;">
+      `;
+
+      tasks.forEach(task => {
+        const title = task.querySelector('.task-title').value;
+        const notes = task.querySelector('.task-notes').value;
+        const date = task.querySelector('.task-date').value;
+        contentHTML += `<li><strong>📌 ${title}</strong><br>📝 ${notes}<br>📅 ${date}</li><br>`;
+      });
+
+      contentHTML += '</ul></div>';
+
+      preview.innerHTML = contentHTML;
+      pdfContent.innerHTML = contentHTML;
+    }
+
+    function downloadPDF() {
+      generatePreview();
+      const element = document.getElementById('pdf-content');
+      html2pdf().set({
+        margin: 10,
+        filename: 'TGCF_ToDo_List.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      }).from(element).save();
+    }
+
+    window.onload = () => addTask();
+  </script>
+</body>
+</html>
